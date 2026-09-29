@@ -1,0 +1,14 @@
+## Build and release folders
+**/bin/
+**/obj/
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+
+## Environment / Local Settings
+appsettings.Development.json
