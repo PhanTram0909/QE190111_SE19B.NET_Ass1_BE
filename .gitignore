@@ -10,5 +10,9 @@
 *.userosscache
 *.suo
 
+## Node / NPM (Stray files)
+node_modules/
+package-lock.json
+
 ## Environment / Local Settings
 appsettings.Development.json
