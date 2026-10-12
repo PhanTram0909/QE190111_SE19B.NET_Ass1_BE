@@ -53,14 +53,25 @@ namespace TaskTrack.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.LoginAsync(dto);
-            if (result == null)
+            try
             {
-                // Invalid credentials — HTTP 401
-                return Unauthorized(new { message = "Invalid email or password." });
-            }
+                var result = await _authService.LoginAsync(dto);
+                if (result == null)
+                {
+                    // Invalid credentials — HTTP 401
+                    return Unauthorized(new { message = "Invalid email or password." });
+                }
 
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    message = "Login service exception: " + ex.Message,
+                    detail = ex.InnerException?.Message
+                });
+            }
         }
     }
 }

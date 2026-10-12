@@ -105,7 +105,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -128,9 +128,26 @@ using (var scope = app.Services.CreateScope())
                 ""Role"" INT NOT NULL DEFAULT 0,
                 ""CreatedDate"" TIMESTAMPTZ NOT NULL DEFAULT NOW()
             );
-            ALTER TABLE ""Task"" ADD COLUMN IF NOT EXISTS ""CreatedByID"" INT REFERENCES ""SystemAccount""(""AccountID"");
         ");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DB Init Table Error] {ex.Message}");
+    }
 
+    try
+    {
+        dbContext.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Task"" ADD COLUMN IF NOT EXISTS ""CreatedByID"" INT;
+        ");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DB Init Column Error] {ex.Message}");
+    }
+
+    try
+    {
         var adminExists = dbContext.SystemAccounts.Any(a => a.Role == 1 || a.Email == "admin@tasktrack.com");
         if (!adminExists)
         {
@@ -148,7 +165,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[DB Init Warning] {ex.Message}");
+        Console.WriteLine($"[DB Seed Admin Error] {ex.Message}");
     }
 }
 
@@ -161,6 +178,7 @@ app.UseSwaggerUI(c =>
 });
 
 // ─── Middleware pipeline ──────────────────────────────────────────────────────
+app.UseRouting();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
