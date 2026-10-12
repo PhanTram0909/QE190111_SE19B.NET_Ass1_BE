@@ -11,8 +11,28 @@ using TaskTrack.Service.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─── Database ─────────────────────────────────────────────────────────────────
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var envDbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrWhiteSpace(envDbUrl) && envDbUrl.StartsWith("postgres"))
+{
+    try
+    {
+        var uri = new Uri(envDbUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        var user = userInfo[0];
+        var password = userInfo.Length > 1 ? userInfo[1] : "";
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var db = uri.AbsolutePath.TrimStart('/');
+        connectionString = $"Host={uri.Host};Port={port};Database={db};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Database URL Parse Error] {ex.Message}");
+    }
+}
+
 builder.Services.AddDbContext<TaskTrackDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // ─── Unit of Work & Repositories ─────────────────────────────────────────────
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

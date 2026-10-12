@@ -20,8 +20,15 @@ namespace TaskTrack.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _service.GetAllActiveAsync();
-            return Ok(result);
+            try
+            {
+                var result = await _service.GetAllActiveAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
 
         /// <summary>GET /api/departments/search?name= — Partial name search (Public)</summary>
