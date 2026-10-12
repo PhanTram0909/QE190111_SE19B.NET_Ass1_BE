@@ -13,6 +13,10 @@ namespace TaskTrack.Repo.Models
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime? ModifiedDate { get; set; }
 
+        // Audit / Account link
+        public int? CreatedByID { get; set; }
+        public SystemAccount? CreatedBy { get; set; }
+
         // Navigation
         public Project Project { get; set; } = null!;
         public ICollection<TaskTag> TaskTags { get; set; } = new List<TaskTag>();

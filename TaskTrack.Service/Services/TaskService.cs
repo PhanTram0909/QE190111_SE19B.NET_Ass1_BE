@@ -32,7 +32,7 @@ namespace TaskTrack.Service.Services
             return tasks.Select(MapToReadDto);
         }
 
-        public async Task<TaskDetailDto> CreateAsync(TaskCreateDto dto)
+        public async Task<TaskDetailDto> CreateAsync(TaskCreateDto dto, int? createdById = null)
         {
             var entity = new Repo.Models.Task
             {
@@ -42,6 +42,7 @@ namespace TaskTrack.Service.Services
                 Priority = dto.Priority,
                 DueDate = dto.DueDate,
                 ProjectID = dto.ProjectID,
+                CreatedByID = createdById,
                 IsActive = true,
                 CreatedDate = DateTime.UtcNow
             };

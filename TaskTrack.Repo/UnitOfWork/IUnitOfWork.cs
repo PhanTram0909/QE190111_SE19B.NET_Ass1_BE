@@ -8,6 +8,7 @@ namespace TaskTrack.Repo.UnitOfWork
         IProjectRepository Projects { get; }
         ITaskRepository Tasks { get; }
         ITagRepository Tags { get; }
+        IAccountRepository Accounts { get; }
         Task<int> SaveChangesAsync();
     }
 }

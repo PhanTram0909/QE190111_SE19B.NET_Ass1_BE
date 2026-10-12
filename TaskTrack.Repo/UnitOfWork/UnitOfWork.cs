@@ -11,6 +11,7 @@ namespace TaskTrack.Repo.UnitOfWork
         public IProjectRepository Projects { get; }
         public ITaskRepository Tasks { get; }
         public ITagRepository Tags { get; }
+        public IAccountRepository Accounts { get; }
 
         public UnitOfWork(TaskTrackDbContext context)
         {
@@ -19,6 +20,7 @@ namespace TaskTrack.Repo.UnitOfWork
             Projects = new ProjectRepository(context);
             Tasks = new TaskRepository(context);
             Tags = new TagRepository(context);
+            Accounts = new AccountRepository(context);
         }
 
         public async Task<int> SaveChangesAsync()

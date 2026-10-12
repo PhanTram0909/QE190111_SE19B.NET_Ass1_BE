@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTrack.Repo.Models;
 using TaskTrack.Service.DTOs;
@@ -16,7 +18,7 @@ namespace TaskTrack.API.Controllers
             _service = service;
         }
 
-        /// <summary>GET /api/tasks — List all active tasks</summary>
+        /// <summary>GET /api/tasks — List all active tasks (Public)</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -24,7 +26,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/tasks/search?title=&amp;status=&amp;priority=&amp;projectId=&amp;tagId= — Multi-filter</summary>
+        /// <summary>GET /api/tasks/search?title=&amp;status=&amp;priority=&amp;projectId=&amp;tagId= — Multi-filter (Public)</summary>
         [HttpGet("search")]
         public async Task<IActionResult> Search(
             [FromQuery] string? title,
@@ -37,7 +39,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/tasks/project/{projectId} — Tasks belonging to a project</summary>
+        /// <summary>GET /api/tasks/project/{projectId} — Tasks belonging to a project (Public)</summary>
         [HttpGet("project/{projectId:int}")]
         public async Task<IActionResult> GetByProject(int projectId)
         {
@@ -45,7 +47,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/tasks/{id} — Get task with its tags</summary>
+        /// <summary>GET /api/tasks/{id} — Get task with its tags (Public)</summary>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -56,19 +58,28 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>POST /api/tasks — Create task (optional TagIDs array)</summary>
+        /// <summary>POST /api/tasks — Create task (Protected)</summary>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] TaskCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _service.CreateAsync(dto);
+            int? accountId = null;
+            var accountIdClaim = User.FindFirst("AccountID")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(accountIdClaim, out int parsedId))
+            {
+                accountId = parsedId;
+            }
+
+            var result = await _service.CreateAsync(dto, accountId);
             return CreatedAtAction(nameof(GetById), new { id = result.TaskID }, result);
         }
 
-        /// <summary>PUT /api/tasks/{id} — Update task; replaces all tags; sets ModifiedDate</summary>
+        /// <summary>PUT /api/tasks/{id} — Update task (Protected)</summary>
         [HttpPut("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, [FromBody] TaskUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -81,8 +92,9 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>DELETE /api/tasks/{id} — Soft-delete (IsActive = false, never hard-deletes)</summary>
+        /// <summary>DELETE /api/tasks/{id} — Soft-delete (Protected)</summary>
         [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _service.DeleteAsync(id);

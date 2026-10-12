@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTrack.Service.DTOs;
 using TaskTrack.Service.Services;
@@ -15,7 +16,7 @@ namespace TaskTrack.API.Controllers
             _service = service;
         }
 
-        /// <summary>GET /api/tags — List all tags</summary>
+        /// <summary>GET /api/tags — List all tags (Public)</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,8 +24,9 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>POST /api/tags — Create a tag</summary>
+        /// <summary>POST /api/tags — Create a tag (Protected)</summary>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] TagCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -34,8 +36,9 @@ namespace TaskTrack.API.Controllers
             return CreatedAtAction(nameof(GetAll), new { id = result.TagID }, result);
         }
 
-        /// <summary>PUT /api/tags/{id} — Update a tag</summary>
+        /// <summary>PUT /api/tags/{id} — Update a tag (Protected)</summary>
         [HttpPut("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, [FromBody] TagUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -48,8 +51,9 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>DELETE /api/tags/{id} — Delete (blocked if used by any task)</summary>
+        /// <summary>DELETE /api/tags/{id} — Delete (Protected, blocked if used by any task)</summary>
         [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             try

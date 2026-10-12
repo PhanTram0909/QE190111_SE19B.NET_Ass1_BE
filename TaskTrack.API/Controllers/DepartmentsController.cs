@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTrack.Service.DTOs;
 using TaskTrack.Service.Services;
@@ -15,7 +16,7 @@ namespace TaskTrack.API.Controllers
             _service = service;
         }
 
-        /// <summary>GET /api/departments — List all active departments</summary>
+        /// <summary>GET /api/departments — List all active departments (Public)</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,7 +24,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/departments/search?name= — Partial name search</summary>
+        /// <summary>GET /api/departments/search?name= — Partial name search (Public)</summary>
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string? name)
         {
@@ -34,7 +35,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/departments/{id} — Get department with its projects</summary>
+        /// <summary>GET /api/departments/{id} — Get department with its projects (Public)</summary>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -45,8 +46,9 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>POST /api/departments — Create new department</summary>
+        /// <summary>POST /api/departments — Create new department (Protected)</summary>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] DepartmentCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -56,8 +58,9 @@ namespace TaskTrack.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.DepartmentID }, result);
         }
 
-        /// <summary>PUT /api/departments/{id} — Update a department</summary>
+        /// <summary>PUT /api/departments/{id} — Update a department (Protected)</summary>
         [HttpPut("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, [FromBody] DepartmentUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -70,8 +73,9 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>DELETE /api/departments/{id} — Delete (blocked if has linked projects)</summary>
+        /// <summary>DELETE /api/departments/{id} — Delete department (Protected, blocked if has projects)</summary>
         [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             try

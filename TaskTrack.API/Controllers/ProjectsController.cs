@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTrack.Repo.Models;
 using TaskTrack.Service.DTOs;
@@ -16,7 +17,7 @@ namespace TaskTrack.API.Controllers
             _service = service;
         }
 
-        /// <summary>GET /api/projects — List all active projects (includes DepartmentName)</summary>
+        /// <summary>GET /api/projects — List all active projects (Public)</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -24,7 +25,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/projects/search?name=&amp;status=&amp;departmentId= — Filter (all params optional)</summary>
+        /// <summary>GET /api/projects/search?name=&amp;status=&amp;departmentId= — Filter (Public)</summary>
         [HttpGet("search")]
         public async Task<IActionResult> Search(
             [FromQuery] string? name,
@@ -35,7 +36,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/projects/department/{departmentId} — Projects by department</summary>
+        /// <summary>GET /api/projects/department/{departmentId} — Projects by department (Public)</summary>
         [HttpGet("department/{departmentId:int}")]
         public async Task<IActionResult> GetByDepartment(int departmentId)
         {
@@ -43,7 +44,7 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>GET /api/projects/{id} — Get project with its tasks</summary>
+        /// <summary>GET /api/projects/{id} — Get project with its tasks (Public)</summary>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -54,8 +55,9 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>POST /api/projects — Create new project</summary>
+        /// <summary>POST /api/projects — Create new project (Protected)</summary>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] ProjectCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -65,8 +67,9 @@ namespace TaskTrack.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.ProjectID }, result);
         }
 
-        /// <summary>PUT /api/projects/{id} — Update a project</summary>
+        /// <summary>PUT /api/projects/{id} — Update a project (Protected)</summary>
         [HttpPut("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, [FromBody] ProjectUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -79,8 +82,9 @@ namespace TaskTrack.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>DELETE /api/projects/{id} — Delete (blocked if has linked tasks)</summary>
+        /// <summary>DELETE /api/projects/{id} — Delete (Protected, blocked if has tasks)</summary>
         [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             try

@@ -12,6 +12,7 @@ namespace TaskTrack.Repo.Data
         public DbSet<Models.Task> Tasks { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<TaskTag> TaskTags { get; set; }
+        public DbSet<SystemAccount> SystemAccounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +47,20 @@ namespace TaskTrack.Repo.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // ─── SystemAccount ────────────────────────────────────────────────────────
+            modelBuilder.Entity<SystemAccount>(entity =>
+            {
+                entity.ToTable("SystemAccount");
+                entity.HasKey(e => e.AccountID);
+                entity.Property(e => e.AccountID).HasColumnName("AccountID");
+                entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Role).IsRequired().HasDefaultValue(0);
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("NOW()");
+            });
+
             // ─── Task ─────────────────────────────────────────────────────────────────
             modelBuilder.Entity<Models.Task>(entity =>
             {
@@ -62,6 +77,11 @@ namespace TaskTrack.Repo.Data
                 entity.HasOne(e => e.Project)
                       .WithMany(p => p.Tasks)
                       .HasForeignKey(e => e.ProjectID)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.CreatedBy)
+                      .WithMany(a => a.CreatedTasks)
+                      .HasForeignKey(e => e.CreatedByID)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
